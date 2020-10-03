@@ -1,5 +1,10 @@
 package com.example.smarthome.chart
 
+import android.app.AlertDialog
+import android.content.ContentValues
+import android.content.Context
+import android.content.DialogInterface
+import android.database.sqlite.SQLiteDatabase
 import android.graphics.Color
 import android.os.Bundle
 import android.os.Handler
@@ -7,17 +12,23 @@ import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.EditText
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.example.smarthome.R
 import com.example.smarthome.chart.adapter.ChartAdapter
+import com.example.smarthome.utils.FileHelper
 import com.github.mikephil.charting.components.YAxis
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.utils.ColorTemplate
+import com.google.gson.JsonObject
 import kotlinx.android.synthetic.main.fragment_charts.*
+import org.json.JSONArray
+import org.json.JSONObject
 import kotlin.random.Random
+
 
 class ChartFragment : Fragment() {
 
@@ -29,6 +40,14 @@ class ChartFragment : Fragment() {
         "Датчик звука"
     )
 
+    private val listMinValue = listOf(
+        0,
+        0,
+        0,
+        0,
+        0
+    )
+
     private val listMaxValue = listOf(
         100,
         100,
@@ -38,7 +57,13 @@ class ChartFragment : Fragment() {
     )
 
     private val listLineSetValue = mutableListOf<LineDataSet>()
-    private val listEntry = listOf<MutableList<Entry>>(mutableListOf(), mutableListOf(), mutableListOf(), mutableListOf(), mutableListOf())
+    private val listEntry = listOf<MutableList<Entry>>(
+        mutableListOf(),
+        mutableListOf(),
+        mutableListOf(),
+        mutableListOf(),
+        mutableListOf()
+    )
     private val listData = mutableListOf<LineData>()
     private var indexTime = 0
     private val chartAdapter = ChartAdapter(listData)
@@ -69,6 +94,34 @@ class ChartFragment : Fragment() {
         }
 
         startDrawData()
+
+        saveDataBtn.setOnClickListener {
+            val nameEditText = EditText(requireContext())
+            val dialog = AlertDialog.Builder(requireContext())
+                .setTitle("Введите имя для сохранения")
+                .setMessage("На английском без пробелов")
+                .setView(nameEditText)
+                .setPositiveButton("сохранить") { dialog, which ->
+                    saveData(nameEditText.text.toString())
+                }
+                .setNegativeButton("отмена", null)
+                .create()
+            dialog.show()
+        }
+    }
+
+    private fun saveData(nameData: String) {
+        val jsonObject = JSONObject()
+        val jsonArray = JSONArray()
+        listEntry.forEach {
+            val listFloat = mutableListOf<Float>()
+            it.forEach {entry ->
+                listFloat.add(entry.y)
+            }
+            jsonArray.put(listFloat)
+        }
+        jsonObject.put(nameData, jsonArray)
+        FileHelper.writeToFile(jsonObject.toString(), requireContext())
     }
 
     private fun startDrawData() {
@@ -76,7 +129,7 @@ class ChartFragment : Fragment() {
         handler.postDelayed(object : Runnable {
             override fun run() {
                 for (i in 0..4) {
-                    listEntry[i].add(getRandomEntry(listMaxValue[i]))
+                    listEntry[i].add(getRandomEntry(listMinValue[i], listMaxValue[i]))
                     listData[i].addDataSet(LineDataSet(listEntry[i], nameCharts[i]))
                     listData[i].notifyDataChanged()
                     chartAdapter.notifyDataSetChanged()
@@ -87,9 +140,9 @@ class ChartFragment : Fragment() {
         }, 700)
     }
 
-    private fun initPipeChartData(){
+    private fun initPipeChartData() {
         for (i in 0..4) {
-            listEntry[i].add(getRandomEntry(listMaxValue[i]))
+            listEntry[i].add(getRandomEntry(listMinValue[i], listMaxValue[i]))
             val setValue = LineDataSet(listEntry[i], nameCharts[i])
             setValue.axisDependency = YAxis.AxisDependency.LEFT
             setValue.color = ColorTemplate.getHoloBlue()
@@ -110,7 +163,7 @@ class ChartFragment : Fragment() {
         ++indexTime
     }
 
-    private fun getRandomEntry(maxValue: Int): Entry =
-        Entry(indexTime.toFloat(), Random.nextInt(0, maxValue).toFloat())
+    private fun getRandomEntry(minValue: Int, maxValue: Int): Entry =
+        Entry(indexTime.toFloat(), Random.nextInt(minValue, maxValue).toFloat())
 
 }
