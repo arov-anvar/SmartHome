@@ -17,12 +17,15 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.example.smarthome.R
 import com.example.smarthome.chart.adapter.ChartAdapter
+import com.example.smarthome.history.model.Data
+import com.example.smarthome.history.model.ResultEntity
 import com.example.smarthome.utils.FileHelper
 import com.github.mikephil.charting.components.YAxis
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.utils.ColorTemplate
+import com.google.gson.Gson
 import com.google.gson.JsonObject
 import kotlinx.android.synthetic.main.fragment_charts.*
 import org.json.JSONArray
@@ -114,14 +117,31 @@ class ChartFragment : Fragment() {
         val jsonObject = JSONObject()
         val jsonArray = JSONArray()
         listEntry.forEach {
-            val listFloat = mutableListOf<Float>()
+            val jsonArrayFloat = JSONArray()
             it.forEach {entry ->
-                listFloat.add(entry.y)
+                jsonArrayFloat.put(entry.y)
             }
-            jsonArray.put(listFloat)
+            jsonArray.put(jsonArrayFloat)
         }
-        jsonObject.put(nameData, jsonArray)
-        FileHelper.writeToFile(jsonObject.toString(), requireContext())
+        jsonObject.put("name", nameData)
+        jsonObject.put("value", jsonArray)
+
+
+        val currentData = FileHelper.readFromFile(requireContext()) ?: ""
+        if (currentData.isEmpty()) {
+            val rootObject = JSONObject()
+            rootObject.put("data", JSONArray().put(jsonObject))
+            FileHelper.writeToFile(rootObject.toString(), requireContext())
+        }
+        else {
+            val dataString = FileHelper.readFromFile(requireContext()) ?: ""
+            val mGson = Gson()
+            val result = mGson.fromJson(dataString, ResultEntity::class.java)
+            val newData = mGson.fromJson(jsonObject.toString(), Data::class.java)
+            result.data.add(newData)
+            val newStrData = mGson.toJson(result)
+            FileHelper.writeToFile(newStrData, requireContext())
+        }
     }
 
     private fun startDrawData() {
