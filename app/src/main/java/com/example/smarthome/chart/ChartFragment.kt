@@ -37,14 +37,18 @@ class ChartFragment : Fragment() {
 
     private val nameCharts = listOf(
         "Датчик температуры",
-        "Датчик влажности",
-        "Датчик освещения",
+        "Датчик влажности", // процент
+        "Датчик освещения", // кило люкс
         "Датчик дыма",
-        "Датчик звука"
+        // С помощью отсоса газов через абсорбирующую бумагу определяется их загрязнённость.
+        // Сторона фильтрующего элемента, обращённая к газам, темнеет или вообще становится чёрной.
+        // Цвет сравнивается со шкалой, состоящей из 10 закрашенных дисков, оттенок которых меняется
+        // от 0 (белый цвет) до 9 (чёрный цвет). Номер шкалы, который совпадает с цветом фильтра и является сажевым числом по Бахараху
+        "Датчик звука" // децибелах
     )
 
     private val listMinValue = listOf(
-        0,
+        -29,
         0,
         0,
         0,
@@ -52,11 +56,11 @@ class ChartFragment : Fragment() {
     )
 
     private val listMaxValue = listOf(
+        43,
         100,
         100,
-        100,
-        100,
-        100
+        10,
+        150
     )
 
     private val listLineSetValue = mutableListOf<LineDataSet>()
@@ -95,8 +99,6 @@ class ChartFragment : Fragment() {
                 isUpdateData = false
             }
         }
-
-        startDrawData()
 
         saveDataBtn.setOnClickListener {
             val nameEditText = EditText(requireContext())
@@ -150,6 +152,7 @@ class ChartFragment : Fragment() {
             override fun run() {
                 for (i in 0..4) {
                     listEntry[i].add(getRandomEntry(listMinValue[i], listMaxValue[i]))
+                    listData[i].clearValues()
                     listData[i].addDataSet(LineDataSet(listEntry[i], nameCharts[i]))
                     listData[i].notifyDataChanged()
                     chartAdapter.notifyDataSetChanged()

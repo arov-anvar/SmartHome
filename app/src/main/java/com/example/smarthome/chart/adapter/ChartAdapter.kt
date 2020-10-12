@@ -22,10 +22,8 @@ class ChartAdapter(private val mData: MutableList<LineData>) : RecyclerView.Adap
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val pipeChart = holder.itemView.findViewById<LineChart>(R.id.pipeChart)
+        pipeChart.contentDescription = ""
         pipeChart.data = mData[position]
     }
 
-    fun updateData() {
-        notifyDataSetChanged()
-    }
 }
