@@ -1,10 +1,6 @@
 package com.example.smarthome.chart
 
 import android.app.AlertDialog
-import android.content.ContentValues
-import android.content.Context
-import android.content.DialogInterface
-import android.database.sqlite.SQLiteDatabase
 import android.graphics.Color
 import android.os.Bundle
 import android.os.Handler
@@ -16,6 +12,7 @@ import android.widget.EditText
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.example.smarthome.R
+import com.example.smarthome.utils.Settings
 import com.example.smarthome.chart.adapter.ChartAdapter
 import com.example.smarthome.history.model.Data
 import com.example.smarthome.history.model.ResultEntity
@@ -26,7 +23,6 @@ import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.utils.ColorTemplate
 import com.google.gson.Gson
-import com.google.gson.JsonObject
 import kotlinx.android.synthetic.main.fragment_charts.*
 import org.json.JSONArray
 import org.json.JSONObject
@@ -34,18 +30,6 @@ import kotlin.random.Random
 
 
 class ChartFragment : Fragment() {
-
-    private val nameCharts = listOf(
-        "Датчик температуры",
-        "Датчик влажности", // процент
-        "Датчик освещения", // кило люкс
-        "Датчик дыма",
-        // С помощью отсоса газов через абсорбирующую бумагу определяется их загрязнённость.
-        // Сторона фильтрующего элемента, обращённая к газам, темнеет или вообще становится чёрной.
-        // Цвет сравнивается со шкалой, состоящей из 10 закрашенных дисков, оттенок которых меняется
-        // от 0 (белый цвет) до 9 (чёрный цвет). Номер шкалы, который совпадает с цветом фильтра и является сажевым числом по Бахараху
-        "Датчик звука" // децибелах
-    )
 
     private val listMinValue = listOf(
         -29,
@@ -153,7 +137,7 @@ class ChartFragment : Fragment() {
                 for (i in 0..4) {
                     listEntry[i].add(getRandomEntry(listMinValue[i], listMaxValue[i]))
                     listData[i].clearValues()
-                    listData[i].addDataSet(LineDataSet(listEntry[i], nameCharts[i]))
+                    listData[i].addDataSet(LineDataSet(listEntry[i], Settings.nameCharts[i]))
                     listData[i].notifyDataChanged()
                     chartAdapter.notifyDataSetChanged()
                 }
@@ -166,7 +150,7 @@ class ChartFragment : Fragment() {
     private fun initPipeChartData() {
         for (i in 0..4) {
             listEntry[i].add(getRandomEntry(listMinValue[i], listMaxValue[i]))
-            val setValue = LineDataSet(listEntry[i], nameCharts[i])
+            val setValue = LineDataSet(listEntry[i], Settings.nameCharts[i])
             setValue.axisDependency = YAxis.AxisDependency.LEFT
             setValue.color = ColorTemplate.getHoloBlue()
             setValue.valueTextColor = ColorTemplate.getHoloBlue()

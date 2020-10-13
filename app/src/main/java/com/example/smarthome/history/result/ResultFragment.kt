@@ -7,7 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import com.example.smarthome.R
-import com.example.smarthome.Util
+import com.example.smarthome.utils.Settings
 import com.example.smarthome.history.model.Data
 import kotlinx.android.synthetic.main.fragment_result.*
 
@@ -27,7 +27,7 @@ class ResultFragment(private val mData: Data) : Fragment() {
         nameTxt.text = mData.name
 
         for ((i, value) in mData.value.withIndex()) {
-            resultsTxt.text = "${resultsTxt.text} ${Util.nameCharts[i]}: \n $value \n \n"
+            resultsTxt.text = "${resultsTxt.text} ${Settings.nameCharts[i]}: \n $value \n \n"
         }
     }
 }
