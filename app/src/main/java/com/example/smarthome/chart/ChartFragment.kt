@@ -26,6 +26,10 @@ import com.google.gson.Gson
 import kotlinx.android.synthetic.main.fragment_charts.*
 import org.json.JSONArray
 import org.json.JSONObject
+import kotlin.math.cos
+import kotlin.math.roundToInt
+import kotlin.math.sin
+import kotlin.math.tan
 import kotlin.random.Random
 
 
@@ -135,7 +139,7 @@ class ChartFragment : Fragment() {
         handler.postDelayed(object : Runnable {
             override fun run() {
                 for (i in 0..4) {
-                    listEntry[i].add(getRandomEntry(listMinValue[i], listMaxValue[i]))
+                    listEntry[i].add(getRandomEntry(listMinValue[i], listMaxValue[i], i))
                     listData[i].clearValues()
                     listData[i].addDataSet(LineDataSet(listEntry[i], Settings.nameCharts[i]))
                     listData[i].notifyDataChanged()
@@ -149,7 +153,7 @@ class ChartFragment : Fragment() {
 
     private fun initPipeChartData() {
         for (i in 0..4) {
-            listEntry[i].add(getRandomEntry(listMinValue[i], listMaxValue[i]))
+            listEntry[i].add(getRandomEntry(listMinValue[i], listMaxValue[i], i))
             val setValue = LineDataSet(listEntry[i], Settings.nameCharts[i])
             setValue.axisDependency = YAxis.AxisDependency.LEFT
             setValue.color = ColorTemplate.getHoloBlue()
@@ -170,7 +174,18 @@ class ChartFragment : Fragment() {
         ++indexTime
     }
 
-    private fun getRandomEntry(minValue: Int, maxValue: Int): Entry =
-        Entry(indexTime.toFloat(), Random.nextInt(minValue, maxValue).toFloat())
+    private fun getRandomEntry(minValue: Int, maxValue: Int, typeDistribution: Int): Entry {
+        return Entry(indexTime.toFloat(), getRandomNumber(typeDistribution, minValue, maxValue))
+    }
+
+    private fun getRandomNumber(type: Int, minValue: Int, maxValue: Int): Float =
+        when(type) {
+            0 -> Random.nextInt(minValue, maxValue).toFloat()
+            1 -> (java.util.Random().nextGaussian().toFloat() * (maxValue - minValue + 1) + minValue).roundToInt().toFloat()
+            2 -> (sin(Random.nextFloat()) * (maxValue - minValue + 1) + minValue).roundToInt().toFloat()
+            3 -> (cos(Random.nextFloat()) * (maxValue - minValue + 1) + minValue).roundToInt().toFloat()
+            4 -> (tan(Random.nextFloat()) * (maxValue - minValue + 1) + minValue).roundToInt().toFloat()
+            else -> 0f
+        }
 
 }
